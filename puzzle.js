@@ -95,9 +95,14 @@ $(document).ready(function() {
 				$('.addNumber').trigger('click');
 			}
 		} else {
-			if (event.keyCode == 9) { //tab
+			if ((event.keyCode == 9) && (event.shiftKey)) { 
 				event.preventDefault();
+				console.log('Shift tab');
+			} else if ((event.keycode == 9)) { //tab
+				event.preventDefault();
+				console.log('reg tab');
 				nextClue();
+				
 			} else if (event.keyCode == 8) { //backspace
 				event.preventDefault();
 				$('td.selected .answer').html("");

@@ -30,9 +30,19 @@ $puzzle = new Puzzle();
 
 $puzzle->getPuzzle();
 
+		if ($puzzle->diagramless) {
+			include('diagramless.php');
+		} else {
+			include('regular.php');
+		}
+
+		
+
+
 ?>
 
 	<br class="clear" />
+<input type="hidden" id="puzzleName" name="puzzle" value="<?php echo $puzzle->filename; ?>" />
 	<div class="footer">
 		&copy; <?php echo date("Y"); ?> Jesse Lansner
 	</div>

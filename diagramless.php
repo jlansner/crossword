@@ -1,14 +1,18 @@
 <input id="diagramless" name="diagramless" value="true" type="hidden" />
-<h2><?php echo $this->title; ?></h2>
+<h2><?php echo $puzzle->title; ?></h2>
 
 <h3>
-	<?php echo $this->author; ?><br />
-	<?php echo $this->copyright; ?>
+	<?php echo $puzzle->author; ?><br />
+	<?php echo $puzzle->copyright; ?>
 </h3>
 
 <div class="showNote">Show Note</div>
 
-<div class="hiddenNote"><?php echo $this->note; ?></div>
+<div class="hiddenNote"><?php echo $puzzle->note; ?></div>
+
+<p>
+	<button class="checkAnswers">Check Answers</button>
+</p>
 
 <br class="clear" />
 <div class="gridColumn">
@@ -16,7 +20,7 @@
 	<?php /*	<a href="#" class="addNumber">Add/Remove Number</a>
 		<select id="clueNumbers" name="clueNumbers">
 			<option value="" selected></option>
-	<?php for ($i = 1; $i < $this->number; $i++) { ?>
+	<?php for ($i = 1; $i < $puzzle->number; $i++) { ?>
 			<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
 	<?php } ?>
 		</select> */ ?>
@@ -27,9 +31,9 @@
 
 	<table class="grid">
 		<tbody>
-<?php for ($i = 0; $i < $this->height; $i++) {  ?>
+<?php for ($i = 0; $i < $puzzle->height; $i++) {  ?>
 			<tr>
-	<?php for ($j = 0; $j < $this->width; $j++) { ?>		
+	<?php for ($j = 0; $j < $puzzle->width; $j++) { ?>		
 				<td><div></div><span class="answer"></span></td>
 	<?php } ?>
 			</tr>
@@ -54,7 +58,7 @@
 
 	<div class="clues acrossClues">	
 		<ul class="across">
-		<?php foreach ($this->across as $key => $value) { ?>
+		<?php foreach ($puzzle->across as $key => $value) { ?>
 			<li class="<?php echo $key; ?>"><span class="clueNumber"><?php echo $key; ?></span>. <?php echo $value; ?></li>
 		<?php } ?>
 		</ul>
@@ -64,7 +68,7 @@
 
 	<div class="clues downClues">
 		<ul class="down">
-		<?php foreach ($this->down as $key => $value) { ?>
+		<?php foreach ($puzzle->down as $key => $value) { ?>
 			<li class="<?php echo $key; ?>"><span class="clueNumber"><?php echo $key; ?></span>. <?php echo $value; ?></li>
 		<?php } ?>
 		</ul>

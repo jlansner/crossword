@@ -14,7 +14,7 @@ $(document).ready(function() {
 	diagramless = false;
 	numberFocus = false;
 	solvedGrid = new Array();
-	emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
+	// emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
 
 	if ($('#diagramless').val()) {
 		diagramless = true;
@@ -105,11 +105,17 @@ $(document).ready(function() {
 				
 			} else if (event.keyCode == 8) { //backspace
 				event.preventDefault();
-				$('td.selected .answer').html("");
+				if ($(this).children('answer').html() == "") {
+					previousLetter();
+					$('td.selected').removeClass('filled activeError').children('.answer').html("");					
+				} else {
+					$('td.selected').removeClass('filled activeError').children('.answer').html("");
+					previousLetter();
+				}
 			
 			} else if (event.keyCode == 32) { //spacebar
-				$('td.selected').removeClass('filled').children('.answer').html("");
-				emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
+				$('td.selected').removeClass('filled activeError').children('.answer').html("");
+				// emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
 				nextLetter();
 		
 			} else if ((event.keyCode >= 37) && (event.keyCode <= 40)) { //arrow keys
@@ -138,9 +144,9 @@ $(document).ready(function() {
 			} else if (((event.keyCode >= 48) && (event.keyCode <= 57)) || ((event.keyCode >= 65) && (event.keyCode <= 90)) || ((event.keyCode >= 96) && (event.keyCode <= 105))) { //letters & numbers
 				move = true;
 				if ((event.keyCode >= 96) && (event.keyCode <= 105)) {
-					$('td.selected').addClass('filled').children('.answer').html(String.fromCharCode(event.keyCode - 48));
+					$('td.selected').addClass('filled').removeClass('activeError').children('.answer').html(String.fromCharCode(event.keyCode - 48));
 					solvedGrid[row][column] = $('td.selected .answer').html();
-					emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
+					// emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
 
 /*				} else if ((event.keyCode == 51) && (event.shiftKey) && $(diagramless)) {
 					$('.addNumber').trigger('click');
@@ -149,9 +155,8 @@ $(document).ready(function() {
 					$('.addBlack').trigger('click');
 					move = false;
 				} else {
-					$('td.selected').addClass('filled').children('.answer').html(String.fromCharCode(event.keyCode).toUpperCase());
+					$('td.selected').addClass('filled').removeClass('activeError').children('.answer').html(String.fromCharCode(event.keyCode).toUpperCase());
 					solvedGrid[row][column] = $('td.selected .answer').html();
-					emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
 
 				}
 				
@@ -162,7 +167,7 @@ $(document).ready(function() {
 					wordComplete = true;
 			
 					$('.highlighted').each(function() {
-						if ($(this).children('.answer').html() == "") {
+						if (($(this).children('.answer').html() == "") || ($(this).hasClass('activeError'))) {
 							wordComplete = false;
 						}
 					});
@@ -170,18 +175,14 @@ $(document).ready(function() {
 					wordComplete = false;
 				}
 			
-				if (emptyCells) {
-					if (move) {
-						if (wordComplete) {
-							nextClue();
-						} else {
-							nextLetter();
-						}
+				if (move) {
+					if (wordComplete) {
+						nextClue();
 					} else {
-						nextEmptyCell();
+						nextLetter();
 					}
 				} else {
-
+					nextEmptyCell();
 				}
 			}
 		}	
@@ -211,7 +212,7 @@ $(document).ready(function() {
 			$('td.selected div').removeClass().html("");
 		}
 		
-		$('td.selected').toggleClass('black').children('.answer').html("");
+		$('td.selected').toggleClass('black').removeClass('activeError').children('.answer').html("");
 
 		if ($('#symmetry').val() == "crossword") {
 			symCell = $('tr').eq(rows - row - 1).children('td').eq(columns - column - 1);
@@ -239,32 +240,6 @@ $(document).ready(function() {
 
 	});
 
-/*	$('body').on('click', '.addNumber', function(event) {
-		event.preventDefault();
-		
-		if ($('td.selected div').html().length) {
-			$('#clueNumbers option').each(function() {
-				if ($(this).val() > parseInt($('td.selected div').html())) {
-					$(this).before('<option value="' + $('td.selected div').html() + '">' + $('td.selected div').html() + '</option>');
-					return false;
-				}
-			});
-			$('#clueNumbers').val("");
-			$('td.selected div').removeClass().html("");
-		} else {
-			if ($('#clueNumbers').val().length) {
-				$('td.selected div').addClass($('#clueNumbers').val()).html($('#clueNumbers').val());
-				$('#clueNumbers option[value="' + $('#clueNumbers').val() + '"]').remove();
-				$('#clueNumbers').blur().val("");
-			} else {
-				numberFocus = true;
-				$('#clueNumbers').focus();
-			}
-		}
-		
-	});
-*/
-
 	$('body').on('change', '#symmetry', function() {
 		$('#symmetry').blur();
 	});
@@ -284,6 +259,10 @@ $(document).ready(function() {
 	} else {
 		$('td .1').parent().trigger('click');
 	}
+	
+	$('body').on('click', '.checkAnswers', function() {
+		checkAnswers();
+	});
 
 });
 
@@ -506,6 +485,28 @@ function nextLetter() {
 	}
 }
 
+function previousLetter() {
+
+	if (across) {
+		if ((column > 0) && (!$('tr').eq(row).children('td').eq(column - 1).hasClass('black'))) {
+			column--;
+		}
+		
+		$('td').removeClass('highlighted selected');
+		$('tr').eq(row).children('td').eq(column).addClass('highlighted selected');
+		highlightCellsAcross();
+
+	} else {
+		if ((row > 0) && (!$('tr').eq(row - 1).children('td').eq(column).hasClass('black'))) {
+			row--;
+		}
+
+		$('td').removeClass('highlighted selected');
+		$('tr').eq(row).children('td').eq(column).addClass('highlighted selected');
+
+		highlightCellsDown();
+	}
+}
 function nextEmptyCell() {
 	column = $('td.selected').index();
 	row = $('td.selected').parent().index();
@@ -542,5 +543,60 @@ function adjustNumbers() {
 		}
 	});
 
-	emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
+	// emptyCells = $('td').length - $('td.black').length - $('td.filled').length;
+}
+
+function checkAnswers() {
+	var answers = new Array();	
+	var i = 0;
+	$('.grid tr').each(function() {
+		answers[i] = new Array();
+		var j = 0;
+		$(this).children('td').each(function() {
+			if ($(this).hasClass('black')) {
+				answers[i][j] = ".";
+			} else {
+				answers[i][j] = $(this).children('.answer').html();
+			}
+			j++;
+		});
+		i++;
+	});	
+	
+	$.post(
+		"checkanswer.php", 
+		{
+			puzzle: $('#puzzleName').val(),
+			answers: answers
+		},
+		function(data, status) {
+    	    showCheckedGrid(data);
+    	}
+    );
+}
+
+function showCheckedGrid(answers) {
+	var checkGrid = jQuery.parseJSON(answers);
+	
+	var completed = true;
+
+	var i = 0;
+	$('.grid tr').each(function() {
+		var j = 0;
+		$(this).children('td').each(function() {
+			if (!$(this).hasClass('black')) {
+				if (checkGrid[i][j] == "x") {
+					$(this).addClass('error activeError');
+					completed = false;
+				}
+			}
+			
+			j++;
+		});
+		i++;
+	});	
+		
+	if (completed) {
+		alert("No mistakes!");
+	}
 }

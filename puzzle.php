@@ -10,25 +10,27 @@ class Puzzle {
 		$this->grid = array();
 		$this->number = 1;
 		$this->clueNumber = 0;
-
+		$this->filename = "";
 	}
 
 	public function getPuzzle() {
 		$this->errorMessage = "";
 
 		if ($_POST['submit'] == "Upload") {
-			$filename = 'puzzles/' . $_FILES['puzzle']['name'];
+			$this->filename = $_FILES['puzzle']['name'];
 
-			if (!file_exists($filename)) {
+			if (!file_exists('puzzles/' . $this->filename)) {
 				move_uploaded_file($_FILES["puzzle"]["tmp_name"], "puzzles/" . $_FILES["puzzle"]["name"]);
 			}
 
-			$this->checkPuzzle($filename);
+			$this->checkPuzzle('puzzles/' . $this->filename);
+			$this->filename = substr($this->filename,0,-4);
 
 		} else if (isset($_REQUEST['puzzle'])) {
-			$filename = 'puzzles/' . $_REQUEST['puzzle'] . '.puz';
+			$this->filename = $_REQUEST['puzzle'];
+			
 
-			$this->checkPuzzle($filename);
+			$this->checkPuzzle('puzzles/' . $this->filename . '.puz');
 
 		} else {
 			$this->showUpload();
@@ -57,15 +59,15 @@ class Puzzle {
 
 		$this->numClues = hexdec(substr($hex,92,2)) + hexdec(substr($hex,94,2));
 		$hexlength = $this->width * $this->height * 2;
-		$solved = pack("H*",substr($hex,104,$hexlength));
-		$grid = pack("H*",substr($hex,104 + $hexlength,$hexlength));
+		$this->solved = pack("H*",substr($hex,104,$hexlength));
+		$this->grid = pack("H*",substr($hex,104 + $hexlength,$hexlength));
 
 		$this->solvedArray = array();
 		$this->gridArray = array();
 		for ($i = 0; $i < $this->height; $i++) {
 			for ($j = 0; $j < $this->width; $j++) {
-				$this->solvedArray[$i][$j] = substr($solved,($i * $this->width) + $j,1);
-				$this->gridArray[$i][$j] = substr($grid,($i * $this->width) + $j,1);
+				$this->solvedArray[$i][$j] = substr($this->solved,($i * $this->width) + $j,1);
+				$this->gridArray[$i][$j] = substr($this->grid,($i * $this->width) + $j,1);
 			}
 		}
 		
@@ -137,7 +139,6 @@ class Puzzle {
 			}
 		}	
 
-		include('regular.php');
 	}
 
 	public function showDiagramless() {
@@ -161,10 +162,28 @@ class Puzzle {
 				}
 			}
 		}
-		
-		include('diagramless.php');
 	}
 	
+	public function checkAnswers() {
+		$answers = $_REQUEST['answers'];
+		$checkGrid = array();
+		for ($i = 0; $i < $this->height; $i++) {
+			$checkGrid[$i] = array();
+			for ($j = 0; $j < $this->width; $j++) {
+				if ($answers[$i][$j] == "") {
+					$checkGrid[$i][$j] = "";
+				} else {
+					if (strtolower($answers[$i][$j]) == strtolower($this->solvedArray[$i][$j])) {
+						$checkGrid[$i][$j] = "";
+					} else {
+						$checkGrid[$i][$j] = "x";
+					}
+				}
+			}
+		}
+		
+		return $checkGrid;
+	}
 }
 
 ?>
